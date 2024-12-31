@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="container">
+      <div class="box">
+        <input placeholder="Enter task" id="task" />
+      
+          <button onclick="addTask()">Add</button>
+          <button onclick="updateTask()" style="margin-top: 10px;">update</button>
+        
+      </div>
+      <div id="ans">
+        <h2 style="color: white;padding-inline: 20px;">tasks</h2>
+      </div>
+    </div>
+  </body>
+
+  <script>
+    let taskId = "";
+    async function addTask() {
+      const task = document.getElementById("task");
+      const response = await fetch("http://localhost:3000/create", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ task: task.value }),
+      });
+
+      const data = await response.json();
+      window.location.reload();
+      console.log(data);
+    }
+
+    async function getTask() {
+      const ans = document.getElementById("ans");
+
+      try {
+        const response = await fetch("http://localhost:3000/read", {
+          method: "GET",
+        });
+
+        const taskResult = await response.json();
+
+        taskResult.map((item) => {
+          ans.innerHTML += `<div style="color: white;margin-top:10px; background-color: white;color: black;width:"100%;display:flex;justify-content: space-between;">
+            <p style="color: white;padding:10px">${item.task}</p>
+            <button onclick="getTasks('${item._id}')">Edit</button>
+            <button onclick="deleteTask('${item._id}')">Delete</button>
+            </div>`;
+        });
+      } catch (error) {
+        console.log(error);
+      }
+    }
+
+    async function getTasks(id) {
+      try {
+        const response = await fetch(`http://localhost:3000/data/${id}`, {
+          method: "GET",
+        });
+
+        const data = await response.json();
+        taskId = data._id;
+
+        document.getElementById("task").value = data.task;
+      } catch (error) {
+        console.log(error);
+      }
+    }
+
+    async function updateTask() {
+      try {
+        const response = await fetch(`http://localhost:3000/update/${taskId}`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ task: document.getElementById("task").value }),
+        });
+
+        console.log(response)
+        window.location.reload();
+      } catch (error) {
+        console.log(error);
+      }
+    }
+
+
+    async function deleteTask(id) {
+        try {
+          
+          const response = await fetch(`http://localhost:3000/delete/${id}`, {
+            method: "DELETE",
+            headers: {
+              "Content-Type": "application/json",
+            },
+          })
+
+          window.location.reload()
+        } catch (error) {
+          console.log(error);
+        }
+    }
+
+    
+    getTask();
+  </script>
+</html>
